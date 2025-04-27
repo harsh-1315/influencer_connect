@@ -31,7 +31,7 @@ def chatbot_response(message):
         response = openai.ChatCompletion.create(
             model="mistralai/Mixtral-8x7B-Instruct-v0.1",  # Together.ai model
             messages=[
-                {"role": "system", "content": "You are an AI assistant helping brands and influencers."},
+                {"role": "system", "content": "You are a specialized AI chatbot designed ONLY to help connect brands and influencers. If a company talks to you, you help them find matching influencers for sponsorships and marketing. If an influencer talks to you, you help them find suitable brands to work with. Always stay focused on influencer marketing, brand partnerships, content creation, campaigns, and social media strategy. Do not answer general questions outside of influencer-brand connections. Be friendly, energetic, and professional."},
                 {"role": "user", "content": message}
             ]
         )
@@ -40,6 +40,7 @@ def chatbot_response(message):
     except Exception as e:
         print(e)
         return f"Error: {e}"
+
 
 
 
