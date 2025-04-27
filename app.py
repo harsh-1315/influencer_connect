@@ -19,72 +19,25 @@ def init_db():
     conn.close()
 
 # Chatbot logic
-def chatbot_response(message, user_type=None, user_id=None):
-    message = message.lower().strip()
-    
-    # Onboarding responses
-    if re.search(r"hi|hello|start", message):
-        return "Welcome! Are you an influencer or a company? Type 'influencer' or 'company' to begin."
-    
-    if re.search(r"influencer", message):
-        return "Great! What's your name, niche (e.g., fitness, beauty), platform (e.g., Instagram), and follower count?"
-    
-    if re.search(r"company", message):
-        return "Awesome! What's your company name, niche (e.g., fitness, beauty), and campaign budget?"
-    
-    # Profile creation (basic parsing)
-    if re.search(r"name|niche|followers|platform|budget", message) and user_type:
-        if user_type == "influencer":
-            try:
-                parts = message.split(",")
-                name = parts[0].split("name")[-1].strip()
-                niche = parts[1].split("niche")[-1].strip()
-                platform = parts[2].split("platform")[-1].strip()
-                followers = int(parts[3].split("followers")[-1].strip())
-                save_influencer(name, niche, followers, platform)
-                return f"Profile created for {name}! Want to find brand matches? Type 'match'."
-            except:
-                return "Please provide: name, niche, platform, followers (e.g., 'name: Alex, niche: fitness, platform: Instagram, followers: 10000')."
-        elif user_type == "company":
-            try:
-                parts = message.split(",")
-                name = parts[0].split("name")[-1].strip()
-                niche = parts[1].split("niche")[-1].strip()
-                budget = int(parts[2].split("budget")[-1].strip())
-                save_company(name, niche, budget)
-                return f"Profile created for {name}! Want to find influencers? Type 'match'."
-            except:
-                return "Please provide: name, niche, budget (e.g., 'name: BrandX, niche: fitness, budget: 1000')."
-    
-    # Matching logic
-    if re.search(r"match", message) and user_id:
-        if user_type == "influencer":
-            matches = find_company_matches(user_id)
-            if matches:
-                return f"Found matches: {', '.join([m['name'] + ' ($' + str(m['budget']) + ')' for m in matches])}. Want to contact one? Type 'contact [name]'."
-            return "No matches yet. Try updating your profile or check back later!"
-        elif user_type == "company":
-            matches = find_influencer_matches(user_id)
-            if matches:
-                return f"Found matches: {', '.join([m['name'] + ' (' + str(m['followers']) + ' followers)' for m in matches])}. Want to contact one? Type 'contact [name]'."
-            return "No matches yet. Try updating your profile or check back later!"
-    
-    # Contact initiation
-    if re.search(r"contact", message):
-        contact_name = message.split("contact")[-1].strip()
-        return f"Connecting you with {contact_name}. Proposed deal: $500 for a post. Reply 'accept' or 'counter [amount]' to proceed."
-    
-    # Negotiation
-    if re.search(r"accept", message):
-        return "Deal accepted! Campaign started. Check your dashboard for details."
-    if re.search(r"counter", message):
-        try:
-            amount = re.search(r"\d+", message).group()
-            return f"Countered with ${amount}. Waiting for response from the other party."
-        except:
-            return "Please specify an amount (e.g., 'counter 600')."
-    
-    return "Sorry, I didn't understand. Try 'start', 'match', or 'contact [name]'."
+import openai
+import os
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+def chatbot_response(message):
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",   # Model name
+            messages=[
+                {"role": "system", "content": "You are an AI assistant helping brands connect with influencers."},
+                {"role": "user", "content": message}
+            ]
+        )
+        reply = response['choices'][0]['message']['content']
+        return reply
+    except Exception as e:
+        print(e)
+        return "Sorry, I couldn't connect to the AI server."
 
 # Database functions
 def save_influencer(name, niche, followers, platform):
