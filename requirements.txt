@@ -8,4 +8,4 @@ Jinja2==3.1.6
 MarkupSafe==3.0.2
 packaging==25.0
 Werkzeug==2.3.7
-openai
+openai==0.28
