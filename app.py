@@ -27,7 +27,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 def chatbot_response(message):
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",   # Model name
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are an AI assistant helping brands connect with influencers."},
                 {"role": "user", "content": message}
@@ -37,7 +37,8 @@ def chatbot_response(message):
         return reply
     except Exception as e:
         print(e)
-        return "Sorry, I couldn't connect to the AI server."
+        return f"Error: {e}"
+
 
 # Database functions
 def save_influencer(name, niche, followers, platform):
