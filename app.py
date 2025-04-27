@@ -148,8 +148,36 @@ def chat():
     data = request.get_json()
     message = data.get('message')
 
-    response = chatbot_response(message)   # ✅ correct
+    influencer_keywords = ["followers", "following", "stats", "audience", "about"]
+    influencer_name = None
 
+    # Improved detection
+    for keyword in influencer_keywords:
+        if keyword in message.lower():
+            # Try to extract name near the keyword
+            pattern = fr'{keyword}\s*(?:does)?\s*(?P<name>\w+)|(?P<name2>\w+)\s*{keyword}'
+            match = re.search(pattern, message, re.IGNORECASE)
+            if match:
+                influencer_name = match.group('name') or match.group('name2')
+                break
+
+    if influencer_name:
+        conn = sqlite3.connect('database.db')
+        c = conn.cursor()
+        c.execute("SELECT name, followers, platform FROM influencers WHERE LOWER(name) = LOWER(?)", (influencer_name.lower(),))
+        influencer = c.fetchone()
+        conn.close()
+
+        if influencer:
+            influencer_name_db, followers, platform = influencer
+            response = f"{influencer_name_db} has {followers} followers on {platform}."
+            return jsonify({'response': response})
+        else:
+            fallback_message = f"Sorry, I couldn't find {influencer_name} in my database."
+            return jsonify({'response': fallback_message})
+
+    # If not about an influencer, continue with normal chatbot
+    response = chatbot_response(message)
     return jsonify({'response': response})
 
 @app.route('/register', methods=['POST'])
