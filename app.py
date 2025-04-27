@@ -185,22 +185,22 @@ def register():
     conn.close()
     return jsonify({'user_id': user_id, 'message': f'{user_type.capitalize()} registered!'})
 
-@app.route('/register-brand', methods=['GET', 'POST'])
+@@app.route('/register-brand', methods=['GET', 'POST'])
 def register_brand():
     if request.method == 'POST':
         name = request.form['name']
         niche = request.form['niche']
-        budget = request.form['budget']
+        budget = int(request.form['budget'])   # 🔥 Force integer
 
         conn = sqlite3.connect('database.db')
         c = conn.cursor()
-        c.execute('INSERT INTO companies (name, niche, budget) VALUES (?, ?, ?)', (name, niche, budget))
+        c.execute('INSERT INTO companies (name, niche, budget) VALUES (?, ?, ?)', 
+                  (name, niche, budget))
         conn.commit()
         conn.close()
 
         return redirect('/')
     return render_template('register_brand.html')
-
 
 @app.route('/register-influencer', methods=['GET', 'POST'])
 def register_influencer():
