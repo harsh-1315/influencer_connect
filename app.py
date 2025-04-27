@@ -185,7 +185,7 @@ def register():
     conn.close()
     return jsonify({'user_id': user_id, 'message': f'{user_type.capitalize()} registered!'})
 
-@@app.route('/register-brand', methods=['GET', 'POST'])
+@app.route('/register-brand', methods=['GET', 'POST'])
 def register_brand():
     if request.method == 'POST':
         name = request.form['name']
