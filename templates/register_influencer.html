@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register as Influencer - PromoFlue</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        form { max-width: 400px; margin: auto; }
+        input, textarea, select { width: 100%; padding: 10px; margin: 10px 0; }
+        button { padding: 10px 20px; background: #4CAF50; color: white; border: none; }
+    </style>
+</head>
+<body>
+    <h2>Register as Influencer</h2>
+    <form action="/register-influencer" method="POST">
+        <input type="text" name="name" placeholder="Your Name" required>
+        <select name="niche" required>
+            <option value="">Select Niche</option>
+            <option value="Fitness">Fitness</option>
+            <option value="Beauty">Beauty</option>
+            <option value="Tech">Tech</option>
+            <option value="Fashion">Fashion</option>
+        </select>
+        <input type="text" name="platform" placeholder="Platform (Instagram, YouTube, etc.)">
+        <input type="number" name="followers" placeholder="Number of Followers">
+        <textarea name="description" placeholder="Short bio..." rows="4"></textarea>
+        <button type="submit">Register</button>
+    </form>
+</body>
+</html>

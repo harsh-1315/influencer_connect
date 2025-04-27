@@ -27,19 +27,75 @@ openai.api_key = os.getenv("TOGETHER_API_KEY")
 openai.api_base = "https://api.together.xyz"    # THIS is important!
 
 def chatbot_response(message):
+    def chatbot_response(message):
     try:
+        conn = sqlite3.connect('database.db')
+        c = conn.cursor()
+
+        if "brand" in message.lower():
+            # User is a brand → show matching influencers
+            niche = None
+            if "fitness" in message.lower():
+                niche = "Fitness"
+            elif "beauty" in message.lower():
+                niche = "Beauty"
+            elif "tech" in message.lower() or "technology" in message.lower():
+                niche = "Tech"
+            elif "fashion" in message.lower():
+                niche = "Fashion"
+
+            if niche:
+                c.execute('SELECT name FROM influencers WHERE niche = ?', (niche,))
+                results = c.fetchall()
+                matches = [r[0] for r in results]
+                match_list = ", ".join(matches) if matches else "No influencers available yet."
+
+                prompt = f"You are an AI chatbot helping brands find influencers. For the niche ({niche}), recommend these influencers: {match_list}. Be friendly and professional."
+            else:
+                prompt = "You are an AI chatbot helping brands connect with influencers. Please guide them politely."
+
+        elif "influencer" in message.lower():
+            # User is an influencer → show matching brands
+            niche = None
+            if "fitness" in message.lower():
+                niche = "Fitness"
+            elif "beauty" in message.lower():
+                niche = "Beauty"
+            elif "tech" in message.lower() or "technology" in message.lower():
+                niche = "Tech"
+            elif "fashion" in message.lower():
+                niche = "Fashion"
+
+            if niche:
+                c.execute('SELECT name FROM brands WHERE niche = ?', (niche,))
+                results = c.fetchall()
+                matches = [r[0] for r in results]
+                match_list = ", ".join(matches) if matches else "No brands available yet."
+
+                prompt = f"You are an AI chatbot helping influencers find brands. For the niche ({niche}), recommend these brands: {match_list}. Be friendly and professional."
+            else:
+                prompt = "You are an AI chatbot helping influencers connect with brands. Please guide them politely."
+        
+        else:
+            prompt = "You are an AI chatbot specializing in connecting brands and influencers. Greet the user and ask if they are a brand or influencer."
+
+        conn.close()
+
+        # Send prompt to Together.ai
         response = openai.ChatCompletion.create(
-            model="mistralai/Mixtral-8x7B-Instruct-v0.1",  # Together.ai model
+            model="mistralai/Mixtral-8x7B-Instruct-v0.1",
             messages=[
-                {"role": "system", "content": "You are a specialized AI chatbot designed ONLY to help connect brands and influencers. If a company talks to you, you help them find matching influencers for sponsorships and marketing. If an influencer talks to you, you help them find suitable brands to work with. Always stay focused on influencer marketing, brand partnerships, content creation, campaigns, and social media strategy. Do not answer general questions outside of influencer-brand connections. Be friendly, energetic, and professional."},
+                {"role": "system", "content": prompt},
                 {"role": "user", "content": message}
             ]
         )
         reply = response['choices'][0]['message']['content']
         return reply
+
     except Exception as e:
         print(e)
         return f"Error: {e}"
+
 
 
 
