@@ -22,14 +22,16 @@ def init_db():
 import openai
 import os
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Set Together API key and API base
+openai.api_key = os.getenv("TOGETHER_API_KEY")
+openai.api_base = "https://api.together.xyz"    # THIS is important!
 
 def chatbot_response(message):
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model="mistralai/Mixtral-8x7B-Instruct-v0.1",  # Together.ai model
             messages=[
-                {"role": "system", "content": "You are an AI assistant helping brands connect with influencers."},
+                {"role": "system", "content": "You are an AI assistant helping brands and influencers."},
                 {"role": "user", "content": message}
             ]
         )
@@ -38,6 +40,7 @@ def chatbot_response(message):
     except Exception as e:
         print(e)
         return f"Error: {e}"
+
 
 
 # Database functions
