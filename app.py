@@ -97,11 +97,11 @@ def chatbot():
 
 @app.route('/chat', methods=['POST'])
 def chat():
-    data = request.json
-    message = data.get('message', '')
-    user_type = data.get('user_type', None)
-    user_id = data.get('user_id', None)
-    response = chatbot_response(message, user_type, user_id)
+    data = request.get_json()
+    message = data.get('message')
+
+    response = chatbot_response(message)   # ✅ correct
+
     return jsonify({'response': response})
 
 @app.route('/register', methods=['POST'])
