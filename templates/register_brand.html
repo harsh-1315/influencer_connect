@@ -1,16 +1,20 @@
+<!-- templates/register_brand.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Register Brand</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <h1>Register as a Brand</h1>
-    <form method="POST">
-        <input type="text" name="name" placeholder="Brand Name" required><br>
-        <input type="text" name="niche" placeholder="Niche (e.g., fitness, beauty)" required><br>
-        <input type="number" name="budget" placeholder="Campaign Budget" required><br>
-        <button type="submit">Register</button>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <form method="POST" class="bg-white p-8 rounded shadow-md w-full max-w-md space-y-4">
+        <h1 class="text-2xl font-bold text-center mb-4">Register as a Brand</h1>
+        <input type="text" name="name" placeholder="Brand Name" class="w-full p-3 border rounded" required>
+        <input type="text" name="niche" placeholder="Niche (e.g., Fitness, Beauty)" class="w-full p-3 border rounded" required>
+        <input type="number" name="budget" placeholder="Campaign Budget" class="w-full p-3 border rounded" required>
+        <button type="submit" class="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600">Register</button>
     </form>
+
 </body>
 </html>

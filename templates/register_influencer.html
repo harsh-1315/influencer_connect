@@ -1,30 +1,31 @@
+<!-- templates/register_influencer.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Register as Influencer - PromoFlue</title>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        form { max-width: 400px; margin: auto; }
-        input, textarea, select { width: 100%; padding: 10px; margin: 10px 0; }
-        button { padding: 10px 20px; background: #4CAF50; color: white; border: none; }
-    </style>
+    <title>Register Influencer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <h2>Register as Influencer</h2>
-    <form action="/register-influencer" method="POST">
-        <input type="text" name="name" placeholder="Your Name" required>
-        <select name="niche" required>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <form action="/register-influencer" method="POST" class="bg-white p-8 rounded shadow-md w-full max-w-md space-y-4">
+        <h2 class="text-2xl font-bold text-center mb-4">Register as an Influencer</h2>
+        <input type="text" name="name" placeholder="Your Name" class="w-full p-3 border rounded" required>
+        
+        <select name="niche" class="w-full p-3 border rounded" required>
             <option value="">Select Niche</option>
             <option value="Fitness">Fitness</option>
             <option value="Beauty">Beauty</option>
             <option value="Tech">Tech</option>
             <option value="Fashion">Fashion</option>
         </select>
-        <input type="text" name="platform" placeholder="Platform (Instagram, YouTube, etc.)">
-        <input type="number" name="followers" placeholder="Number of Followers">
-        <textarea name="description" placeholder="Short bio..." rows="4"></textarea>
-        <button type="submit">Register</button>
+
+        <input type="text" name="platform" placeholder="Platform (Instagram, YouTube)" class="w-full p-3 border rounded" required>
+        <input type="number" name="followers" placeholder="Number of Followers" class="w-full p-3 border rounded" required>
+        <textarea name="description" placeholder="Short Bio..." rows="4" class="w-full p-3 border rounded"></textarea>
+
+        <button type="submit" class="w-full bg-green-500 text-white p-3 rounded hover:bg-green-600">Register</button>
     </form>
+
 </body>
 </html>
