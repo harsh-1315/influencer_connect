@@ -1,74 +1,60 @@
+<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Influencer-Company Connect</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/static/styles.css">
+    <title>Chatbot | Influencer Connect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
-    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-        <h1 class="text-2xl font-bold mb-4 text-center">Chat with Our AI Bot</h1>
-        <div id="chatbox" class="h-64 overflow-y-auto border p-4 mb-4"></div>
-        <input id="message" type="text" class="w-full p-2 border rounded" placeholder="Type your message...">
-        <button onclick="sendMessage()" class="w-full bg-blue-500 text-white p-2 rounded mt-2 hover:bg-blue-600">Send</button>
+<body class="bg-gray-100">
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-blue-600">InfluencerConnect Chatbot</h1>
+            <a href="/" class="text-blue-600 hover:underline">Home</a>
+        </div>
+    </nav>
+
+    <!-- Chat Container -->
+    <div class="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
+        <div id="chatbox" class="space-y-4 h-96 overflow-y-auto mb-4">
+            <!-- Messages will appear here -->
+        </div>
+
+        <div class="flex">
+            <input id="userInput" type="text" placeholder="Type your message..." class="flex-grow border rounded-l-lg p-3 focus:outline-none" />
+            <button onclick="sendMessage()" class="bg-blue-600 text-white px-5 rounded-r-lg hover:bg-blue-700">Send</button>
+        </div>
     </div>
+
     <script>
-        let userType = null;
-        let userId = null;
+    function sendMessage() {
+        const userInput = document.getElementById('userInput').value;
+        if (!userInput.trim()) return;
+        addMessage(userInput, 'user');
 
-        function appendMessage(sender, text) {
-            const chatbox = document.getElementById('chatbox');
-            const message = document.createElement('div');
-            message.className = sender === 'user' ? 'text-right' : 'text-left';
-            message.innerHTML = `<p class="inline-block p-2 rounded ${sender === 'user' ? 'bg-blue-100' : 'bg-gray-200'}">${text}</p>`;
-            chatbox.appendChild(message);
-            chatbox.scrollTop = chatbox.scrollHeight;
-        }
-
-        async function sendMessage() {
-            const messageInput = document.getElementById('message');
-            const message = messageInput.value;
-            if (!message) return;
-
-            appendMessage('user', message);
-            messageInput.value = '';
-
-            const response = await fetch('/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message, user_type: userType, user_id: userId })
-            });
-            const data = await response.json();
-            appendMessage('bot', data.response);
-
-            // Auto-register user after onboarding
-            if (message.includes('name') && message.includes('niche')) {
-                const parts = message.split(',');
-                const name = parts[0].split('name')[-1].trim();
-                const niche = parts[1].split('niche')[-1].trim();
-                const followers_or_budget = parseInt(parts[2].split(userType === 'influencer' ? 'followers' : 'budget')[-1].trim());
-                const platform = userType === 'influencer' ? parts[3].split('platform')[-1].trim() : null;
-
-                const regResponse = await fetch('/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_type: userType, name, niche, followers_or_budget, platform })
-                });
-                const regData = await regResponse.json();
-                userId = regData.user_id;
-                appendMessage('bot', regData.message);
-            }
-
-            // Set user type
-            if (message.toLowerCase().includes('influencer')) userType = 'influencer';
-            if (message.toLowerCase().includes('company')) userType = 'company';
-        }
-
-        document.getElementById('message').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
+        fetch('/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: userInput })
+        })
+        .then(response => response.json())
+        .then(data => {
+            addMessage(data.response, 'bot');
+            document.getElementById('userInput').value = '';
         });
+    }
+
+    function addMessage(text, sender) {
+        const chatbox = document.getElementById('chatbox');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `p-3 rounded-lg max-w-xs ${sender === 'user' ? 'bg-blue-100 self-end' : 'bg-gray-200 self-start'}`;
+        messageDiv.textContent = text;
+        chatbox.appendChild(messageDiv);
+        chatbox.scrollTop = chatbox.scrollHeight;
+    }
     </script>
+
 </body>
 </html>
