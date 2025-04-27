@@ -194,8 +194,7 @@ def register_brand():
 
         conn = sqlite3.connect('database.db')
         c = conn.cursor()
-        c.execute('INSERT INTO companies (name, niche, budget) VALUES (?, ?, ?)', 
-                  (name, niche, budget))
+        c.execute('INSERT INTO companies (name, niche, budget) VALUES (?, ?, ?)', (name, niche, budget))
         conn.commit()
         conn.close()
 
