@@ -135,8 +135,12 @@ def find_influencer_matches(company_id):
 
 # Flask routes
 @app.route('/')
-def index():
-    return render_template('index.html')
+def home():
+    return render_template('home.html')   # This will show your new home.html
+
+@app.route('/chatbot')
+def chatbot():
+    return render_template('index.html')  # This will show your old chatbot (index.html)
 
 @app.route('/chat', methods=['POST'])
 def chat():
