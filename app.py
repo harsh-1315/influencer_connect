@@ -27,7 +27,6 @@ openai.api_key = os.getenv("TOGETHER_API_KEY")
 openai.api_base = "https://api.together.xyz"    # THIS is important!
 
 def chatbot_response(message):
-    def chatbot_response(message):
     try:
         conn = sqlite3.connect('database.db')
         c = conn.cursor()
@@ -95,7 +94,6 @@ def chatbot_response(message):
     except Exception as e:
         print(e)
         return f"Error: {e}"
-
 
 
 
