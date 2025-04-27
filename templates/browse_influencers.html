@@ -1,0 +1,31 @@
+<!-- templates/browse_influencers.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Browse Influencers</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+
+    <nav class="bg-white shadow-md p-4 flex justify-between">
+        <h1 class="text-xl font-bold text-purple-600">Influencers</h1>
+        <a href="/" class="text-purple-500 hover:underline">Home</a>
+    </nav>
+
+    <div class="container mx-auto p-6 flex-grow">
+        <h2 class="text-3xl font-bold mb-6">Meet Our Influencers</h2>
+
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {% for name, niche, followers, platform in influencers %}
+            <div class="p-6 bg-white rounded shadow">
+                <h3 class="text-2xl font-bold mb-2">{{ name }}</h3>
+                <p class="text-gray-600">{{ niche }} niche</p>
+                <p class="text-gray-500">{{ followers }} followers on {{ platform }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!-- templates/campaigns.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Campaigns</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+
+    <nav class="bg-white shadow-md p-4 flex justify-between">
+        <h1 class="text-xl font-bold text-blue-600">Campaigns</h1>
+        <a href="/" class="text-blue-500 hover:underline">Home</a>
+    </nav>
+
+    <div class="container mx-auto p-6 flex-grow">
+        <h2 class="text-3xl font-bold mb-6">Active Campaigns</h2>
+
+        <div class="grid gap-4 md:grid-cols-2">
+            {% for title, budget, status in campaigns %}
+            <div class="p-6 bg-white rounded shadow">
+                <h3 class="text-2xl font-bold mb-2">{{ title }}</h3>
+                <p class="text-gray-600">Budget: ${{ budget }}</p>
+                <p class="text-gray-500">Status: {{ status }}</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="mt-10">
+            <a href="/register-brand" class="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700">Create New Campaign</a>
+        </div>
+    </div>
+
+</body>
+</html>
