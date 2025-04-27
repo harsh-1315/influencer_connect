@@ -33,7 +33,6 @@ def chatbot_response(message):
 
         niche = None
 
-        # Identify niche from message
         if "fitness" in message.lower():
             niche = "Fitness"
         elif "beauty" in message.lower():
@@ -44,26 +43,30 @@ def chatbot_response(message):
             niche = "Fashion"
 
         if niche:
-            # If user is an influencer → show brands
             if "brand" not in message.lower():
                 c.execute('SELECT name FROM companies WHERE niche = ?', (niche,))
                 results = c.fetchall()
                 brands = [r[0] for r in results]
                 if brands:
                     brand_list = ", ".join(brands)
-                    prompt = f"You are an AI chatbot helping influencers find brands. Available {niche} brands: {brand_list}. Suggest politely."
+                    prompt = f"""You are an AI chatbot helping influencers find brands for partnerships.
+ONLY recommend from these available brands: {brand_list}.
+DO NOT invent any other brands outside this list.
+Be friendly, short, and professional."""
                 else:
-                    prompt = f"There are no {niche} brands registered yet. Apologize politely."
+                    prompt = "There are currently no brands available in this niche. Please apologize politely."
             else:
-                # If user is a brand → show influencers
                 c.execute('SELECT name FROM influencers WHERE niche = ?', (niche,))
                 results = c.fetchall()
                 influencers = [r[0] for r in results]
                 if influencers:
                     influencer_list = ", ".join(influencers)
-                    prompt = f"You are an AI chatbot helping brands find influencers. Available {niche} influencers: {influencer_list}. Suggest politely."
+                    prompt = f"""You are an AI chatbot helping brands find influencers.
+ONLY recommend from these available influencers: {influencer_list}.
+DO NOT invent any other influencers outside this list.
+Be friendly, short, and professional."""
                 else:
-                    prompt = f"There are no {niche} influencers registered yet. Apologize politely."
+                    prompt = "There are currently no influencers available in this niche. Please apologize politely."
         else:
             prompt = "You are an AI chatbot connecting brands and influencers. Greet the user and ask if they are a brand or an influencer."
 
@@ -82,8 +85,6 @@ def chatbot_response(message):
     except Exception as e:
         print(e)
         return f"Error: {e}"
-
-
 
 
 # Database functions
