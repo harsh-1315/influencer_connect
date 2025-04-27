@@ -185,6 +185,41 @@ def register():
     conn.close()
     return jsonify({'user_id': user_id, 'message': f'{user_type.capitalize()} registered!'})
 
+@app.route('/register-brand', methods=['GET', 'POST'])
+def register_brand():
+    if request.method == 'POST':
+        name = request.form['name']
+        niche = request.form['niche']
+        budget = request.form['budget']
+
+        conn = sqlite3.connect('database.db')
+        c = conn.cursor()
+        c.execute('INSERT INTO companies (name, niche, budget) VALUES (?, ?, ?)', 
+                  (name, niche, budget))
+        conn.commit()
+        conn.close()
+
+        return redirect('/')
+    return render_template('register_brand.html')
+
+@app.route('/register-influencer', methods=['GET', 'POST'])
+def register_influencer():
+    if request.method == 'POST':
+        name = request.form['name']
+        niche = request.form['niche']
+        platform = request.form['platform']
+        followers = request.form['followers']
+
+        conn = sqlite3.connect('database.db')
+        c = conn.cursor()
+        c.execute('INSERT INTO influencers (name, niche, followers, platform) VALUES (?, ?, ?, ?)', 
+                  (name, niche, followers, platform))
+        conn.commit()
+        conn.close()
+
+        return redirect('/')
+    return render_template('register_influencer.html')
+
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
