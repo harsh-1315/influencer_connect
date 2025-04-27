@@ -202,6 +202,7 @@ def register_brand():
         return redirect('/')
     return render_template('register_brand.html')
 
+
 @app.route('/register-influencer', methods=['GET', 'POST'])
 def register_influencer():
     if request.method == 'POST':
