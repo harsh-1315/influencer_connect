@@ -147,10 +147,10 @@ def chatbot():
     return render_template('index.html')  # This will show your old chatbot (index.html)
 
 # Add this at the top of your app.py
-session_state = {}
+
 
 # At top of app.py
-session_state = {}
+
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -306,6 +306,23 @@ def browse_influencers():
     influencers = c.fetchall()
     conn.close()
     return render_template('browse_influencers.html', influencers=influencers)
+
+@app.route('/register-brand', methods=['GET', 'POST'])
+def register_brand():
+    if request.method == 'POST':
+        name = request.form['name']
+        niche = request.form['niche']
+        budget = int(request.form['budget'])
+
+        conn = sqlite3.connect('database.db')
+        c = conn.cursor()
+        c.execute('INSERT INTO companies (name, niche, budget) VALUES (?, ?, ?)', (name, niche, budget))
+        conn.commit()
+        conn.close()
+
+        return redirect('/success')
+    return render_template('register_brand.html')
+
 
 
 @app.route('/register-influencer', methods=['GET', 'POST'])
