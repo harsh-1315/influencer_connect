@@ -216,8 +216,34 @@ def register_brand():
         conn.commit()
         conn.close()
 
-        return redirect('/')
+        return redirect('/success')
     return render_template('register_brand.html')
+
+# Success Page
+@app.route('/success')
+def success():
+    return render_template('success.html')
+
+# Campaigns Page
+@app.route('/campaigns')
+def campaigns():
+    conn = sqlite3.connect('database.db')
+    c = conn.cursor()
+    c.execute("SELECT title, budget, status FROM campaigns")
+    campaigns = c.fetchall()
+    conn.close()
+    return render_template('campaigns.html', campaigns=campaigns)
+
+# Browse Influencers Page
+@app.route('/influencers')
+def browse_influencers():
+    conn = sqlite3.connect('database.db')
+    c = conn.cursor()
+    c.execute("SELECT name, niche, followers, platform FROM influencers")
+    influencers = c.fetchall()
+    conn.close()
+    return render_template('browse_influencers.html', influencers=influencers)
+
 
 @app.route('/register-influencer', methods=['GET', 'POST'])
 def register_influencer():
@@ -234,7 +260,7 @@ def register_influencer():
         conn.commit()
         conn.close()
 
-        return redirect('/')
+        return redirect('/success')
     return render_template('register_influencer.html')
 
 if __name__ == '__main__':
