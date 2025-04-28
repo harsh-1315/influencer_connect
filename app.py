@@ -155,6 +155,10 @@ def chat():
     data = request.get_json()
     message = data.get('message')
 
+    greetings = ["hi", "hello", "hey", "good morning", "good afternoon"]
+    if message.lower().strip() in greetings:
+        return jsonify({'response': "👋 Hello! Welcome to BrandConnect. What niche are you targeting? (Fitness, Beauty, Tech, Fashion)"})
+
     influencer_keywords = ["followers", "following", "stats", "audience", "about"]
     influencer_name = None
 
@@ -233,7 +237,6 @@ def chat():
     # Step 3: Default fallback
     response = "👋 Hello! To find influencers, please start by telling me your niche (Fitness, Beauty, Tech, Fashion)."
     return jsonify({'response': response})
-
 
 @app.route('/register', methods=['POST'])
 def register():
