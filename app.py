@@ -5,6 +5,9 @@ import json
 
 app = Flask(__name__)
 
+session_state = {}  # <<< ✅ ADD IT RIGHT HERE!
+
+
 # Database setup
 def init_db():
     conn = sqlite3.connect('database.db')
@@ -143,18 +146,21 @@ def home():
 def chatbot():
     return render_template('index.html')  # This will show your old chatbot (index.html)
 
+# Add this at the top of your app.py
+session_state = {}
+
 @app.route('/chat', methods=['POST'])
 def chat():
+    global session_state
     data = request.get_json()
     message = data.get('message')
 
     influencer_keywords = ["followers", "following", "stats", "audience", "about"]
     influencer_name = None
 
-    # Improved detection
+    # Step 1: Check if user is asking about a specific influencer
     for keyword in influencer_keywords:
         if keyword in message.lower():
-            # Try to extract name near the keyword
             pattern = fr'{keyword}\s*(?:does)?\s*(?P<name>\w+)|(?P<name2>\w+)\s*{keyword}'
             match = re.search(pattern, message, re.IGNORECASE)
             if match:
@@ -176,9 +182,58 @@ def chat():
             fallback_message = f"Sorry, I couldn't find {influencer_name} in my database."
             return jsonify({'response': fallback_message})
 
-    # If not about an influencer, continue with normal chatbot
-    response = chatbot_response(message)
+    # Step 2: If not asking about a specific influencer, move into Smart Matchmaking
+    if 'niche' not in session_state:
+        session_state['niche'] = message
+        return jsonify({'response': "Awesome! Which platform are you looking for? (Instagram, YouTube, TikTok)"})
+
+    if 'platform' not in session_state:
+        session_state['platform'] = message
+        return jsonify({'response': "Great choice! What's your estimated budget in dollars?"})
+
+    if 'budget' not in session_state:
+        try:
+            session_state['budget'] = int(message)
+        except ValueError:
+            return jsonify({'response': "Please enter your budget as a number (e.g., 5000)."})
+
+        # All info collected, perform matchmaking!
+        conn = sqlite3.connect('database.db')
+        c = conn.cursor()
+
+        niche = session_state['niche']
+        platform = session_state['platform']
+        budget = session_state['budget']
+
+        expected_followers_low = budget * 8
+        expected_followers_high = budget * 12
+
+        c.execute("""
+            SELECT name, followers, platform 
+            FROM influencers 
+            WHERE LOWER(niche) = LOWER(?) 
+              AND LOWER(platform) = LOWER(?) 
+              AND followers BETWEEN ? AND ?
+        """, (niche.lower(), platform.lower(), expected_followers_low, expected_followers_high))
+
+        matches = c.fetchall()
+        conn.close()
+
+        if matches:
+            reply = "🎯 Based on your needs, here are some influencer matches:\n"
+            for match in matches:
+                reply += f"- {match[0]} ({match[1]} followers on {match[2]})\n"
+        else:
+            reply = "😔 Sorry, no perfect matches found. Try adjusting budget or platform."
+
+        # Reset session after showing matches
+        session_state = {}
+        return jsonify({'response': reply})
+
+    # Step 3: Default fallback
+    response = "👋 Hello! To find influencers, please start by telling me your niche (Fitness, Beauty, Tech, Fashion)."
     return jsonify({'response': response})
+
 
 @app.route('/register', methods=['POST'])
 def register():
