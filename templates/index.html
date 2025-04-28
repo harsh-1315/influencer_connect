@@ -17,17 +17,27 @@
     </nav>
 
     <!-- Chat Container -->
-    <div class="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-        <div id="chatbox" class="space-y-4 h-96 overflow-y-auto mb-4">
+    <div class="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md flex flex-col h-[80vh]">
+        
+        <!-- Quick Reply Buttons -->
+        <div class="flex space-x-2 mb-4">
+            <button onclick="sendQuickMessage('I am a brand')" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">I'm a Brand</button>
+            <button onclick="sendQuickMessage('I am an influencer')" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">I'm an Influencer</button>
+        </div>
+
+        <!-- Chat Box -->
+        <div id="chatbox" class="flex-1 space-y-4 overflow-y-auto mb-4 p-2 border rounded-lg bg-gray-50">
             <!-- Messages will appear here -->
         </div>
 
+        <!-- User Input -->
         <div class="flex">
             <input id="userInput" type="text" placeholder="Type your message..." class="flex-grow border rounded-l-lg p-3 focus:outline-none" />
             <button onclick="sendMessage()" class="bg-blue-600 text-white px-5 rounded-r-lg hover:bg-blue-700">Send</button>
         </div>
     </div>
 
+    <!-- Scripts -->
     <script>
     function sendMessage() {
         const userInput = document.getElementById('userInput').value;
@@ -46,10 +56,24 @@
         });
     }
 
+    function sendQuickMessage(text) {
+        addMessage(text, 'user');
+
+        fetch('/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text })
+        })
+        .then(response => response.json())
+        .then(data => {
+            addMessage(data.response, 'bot');
+        });
+    }
+
     function addMessage(text, sender) {
         const chatbox = document.getElementById('chatbox');
         const messageDiv = document.createElement('div');
-        messageDiv.className = `p-3 rounded-lg max-w-xs ${sender === 'user' ? 'bg-blue-100 self-end' : 'bg-gray-200 self-start'}`;
+        messageDiv.className = `p-3 rounded-lg max-w-xs ${sender === 'user' ? 'bg-blue-100 self-end ml-auto' : 'bg-gray-200 self-start mr-auto'}`;
         messageDiv.textContent = text;
         chatbox.appendChild(messageDiv);
         chatbox.scrollTop = chatbox.scrollHeight;
