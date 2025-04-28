@@ -149,6 +149,9 @@ def chatbot():
 # Add this at the top of your app.py
 session_state = {}
 
+# At top of app.py
+session_state = {}
+
 @app.route('/chat', methods=['POST'])
 def chat():
     global session_state
@@ -157,12 +160,13 @@ def chat():
 
     greetings = ["hi", "hello", "hey", "good morning", "good afternoon"]
     if message.lower().strip() in greetings:
-        return jsonify({'response': "👋 Hello! Welcome to BrandConnect. What niche are you targeting? (Fitness, Beauty, Tech, Fashion)"})
+        session_state.clear()  # Clear old session when new greeting
+        return jsonify({'response': "👋 Hello! Welcome to BrandConnect! Are you a Brand or an Influencer?"})
 
     influencer_keywords = ["followers", "following", "stats", "audience", "about"]
     influencer_name = None
 
-    # Step 1: Check if user is asking about a specific influencer
+    # Step 1: Check if user is asking about specific influencer stats
     for keyword in influencer_keywords:
         if keyword in message.lower():
             pattern = fr'{keyword}\s*(?:does)?\s*(?P<name>\w+)|(?P<name2>\w+)\s*{keyword}'
@@ -186,22 +190,32 @@ def chat():
             fallback_message = f"Sorry, I couldn't find {influencer_name} in my database."
             return jsonify({'response': fallback_message})
 
-    # Step 2: If not asking about a specific influencer, move into Smart Matchmaking
+    # Step 2: If not about stats, move to matchmaking
+    if 'user_type' not in session_state:
+        if message.lower() in ["brand", "influencer"]:
+            session_state['user_type'] = message.lower()
+            return jsonify({'response': "Great! What niche are you targeting? (Fitness, Beauty, Tech, Fashion)"})
+        else:
+            return jsonify({'response': "Please reply 'Brand' or 'Influencer' to continue."})
+
     if 'niche' not in session_state:
         session_state['niche'] = message
-        return jsonify({'response': "Awesome! Which platform are you looking for? (Instagram, YouTube, TikTok)"})
+        if session_state['user_type'] == 'brand':
+            return jsonify({'response': "Awesome! Which platform are you looking for? (Instagram, YouTube, TikTok)"})
+        else:
+            return jsonify({'response': "Awesome! What's your follower count on your main platform?"})
 
-    if 'platform' not in session_state:
+    if session_state['user_type'] == 'brand' and 'platform' not in session_state:
         session_state['platform'] = message
-        return jsonify({'response': "Great choice! What's your estimated budget in dollars?"})
+        return jsonify({'response': "What's your estimated budget in dollars?"})
 
-    if 'budget' not in session_state:
+    if session_state['user_type'] == 'brand' and 'budget' not in session_state:
         try:
             session_state['budget'] = int(message)
         except ValueError:
             return jsonify({'response': "Please enter your budget as a number (e.g., 5000)."})
 
-        # All info collected, perform matchmaking!
+        # Brand trying to find influencers
         conn = sqlite3.connect('database.db')
         c = conn.cursor()
 
@@ -218,25 +232,8 @@ def chat():
             WHERE LOWER(niche) = LOWER(?) 
               AND LOWER(platform) = LOWER(?) 
               AND followers BETWEEN ? AND ?
-        """, (niche.lower(), platform.lower(), expected_followers_low, expected_followers_high))
+        """, (niche.lower(), platform.lower(),
 
-        matches = c.fetchall()
-        conn.close()
-
-        if matches:
-            reply = "🎯 Based on your needs, here are some influencer matches:\n"
-            for match in matches:
-                reply += f"- {match[0]} ({match[1]} followers on {match[2]})\n"
-        else:
-            reply = "😔 Sorry, no perfect matches found. Try adjusting budget or platform."
-
-        # Reset session after showing matches
-        session_state = {}
-        return jsonify({'response': reply})
-
-    # Step 3: Default fallback
-    response = "👋 Hello! To find influencers, please start by telling me your niche (Fitness, Beauty, Tech, Fashion)."
-    return jsonify({'response': response})
 
 @app.route('/register', methods=['POST'])
 def register():
