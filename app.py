@@ -160,13 +160,12 @@ def chat():
 
     greetings = ["hi", "hello", "hey", "good morning", "good afternoon"]
     if message.lower().strip() in greetings:
-        session_state.clear()  # Clear old session when new greeting
+        session_state.clear()
         return jsonify({'response': "👋 Hello! Welcome to BrandConnect! Are you a Brand or an Influencer?"})
 
     influencer_keywords = ["followers", "following", "stats", "audience", "about"]
     influencer_name = None
 
-    # Step 1: Check if user is asking about specific influencer stats
     for keyword in influencer_keywords:
         if keyword in message.lower():
             pattern = fr'{keyword}\s*(?:does)?\s*(?P<name>\w+)|(?P<name2>\w+)\s*{keyword}'
@@ -190,7 +189,6 @@ def chat():
             fallback_message = f"Sorry, I couldn't find {influencer_name} in my database."
             return jsonify({'response': fallback_message})
 
-    # Step 2: If not about stats, move to matchmaking
     if 'user_type' not in session_state:
         if message.lower() in ["brand", "influencer"]:
             session_state['user_type'] = message.lower()
@@ -215,7 +213,6 @@ def chat():
         except ValueError:
             return jsonify({'response': "Please enter your budget as a number (e.g., 5000)."})
 
-        # Brand trying to find influencers
         conn = sqlite3.connect('database.db')
         c = conn.cursor()
 
@@ -232,47 +229,58 @@ def chat():
             WHERE LOWER(niche) = LOWER(?) 
               AND LOWER(platform) = LOWER(?) 
               AND followers BETWEEN ? AND ?
-        """, (niche.lower(), platform.lower(),
+        """, (niche.lower(), platform.lower(), expected_followers_low, expected_followers_high))
 
+        matches = c.fetchall()
+        conn.close()
 
-@app.route('/register', methods=['POST'])
-def register():
-    data = request.json
-    user_type = data.get('user_type')
-    name = data.get('name')
-    niche = data.get('niche')
-    followers_or_budget = data.get('followers_or_budget')
-    platform = data.get('platform', None)
-    
-    conn = sqlite3.connect('database.db')
-    c = conn.cursor()
-    if user_type == 'influencer':
-        c.execute("INSERT INTO influencers (name, niche, followers, platform) VALUES (?, ?, ?, ?)", 
-                  (name, niche, followers_or_budget, platform))
-    elif user_type == 'company':
-        c.execute("INSERT INTO companies (name, niche, budget) VALUES (?, ?, ?)", 
-                  (name, niche, followers_or_budget))
-    user_id = c.lastrowid
-    conn.commit()
-    conn.close()
-    return jsonify({'user_id': user_id, 'message': f'{user_type.capitalize()} registered!'})
+        if matches:
+            reply = "🎯 Here are some influencers matching your brand's needs:\n"
+            for match in matches:
+                reply += f"- {match[0]} ({match[1]} followers on {match[2]})\n"
+        else:
+            reply = "😔 Sorry, no perfect influencer matches found."
 
-@app.route('/register-brand', methods=['GET', 'POST'])
-def register_brand():
-    if request.method == 'POST':
-        name = request.form['name']
-        niche = request.form['niche']
-        budget = int(request.form['budget'])   # 🔥 Force integer
+        session_state.clear()
+        return jsonify({'response': reply})
+
+    if session_state['user_type'] == 'influencer' and 'followers' not in session_state:
+        try:
+            session_state['followers'] = int(message)
+        except ValueError:
+            return jsonify({'response': "Please enter your follower count as a number (e.g., 10000)."})
 
         conn = sqlite3.connect('database.db')
         c = conn.cursor()
-        c.execute('INSERT INTO companies (name, niche, budget) VALUES (?, ?, ?)', 
-                  (name, niche, budget))
-        conn.commit()
+
+        niche = session_state['niche']
+        followers = session_state['followers']
+        min_budget = followers // 100
+
+        c.execute("""
+            SELECT name, budget 
+            FROM companies 
+            WHERE LOWER(niche) = LOWER(?) 
+              AND budget >= ?
+        """, (niche.lower(), min_budget))
+
+        matches = c.fetchall()
         conn.close()
 
-        return redirect('/success')
-    return render_template('register_brand.html')
+        if matches:
+            reply = "🎯 Here are some brands you could work with:\n"
+            for match in matches:
+                reply += f"- {match[0]} (Budget: ${match[1]})\n"
+        else:
+            reply = "😔 Sorry, no brands match your profile yet."
+
+        session_state.clear()
+        return jsonify({'response': reply})
+
+    response = "👋 Hello! Let's start again — are you a Brand or an Influencer?"
+    session_state.clear()
+    return jsonify({'response': response})
+
 
 # Success Page
 @app.route('/success')
