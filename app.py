@@ -133,6 +133,20 @@ def register_brand():
         return redirect('/login')
 
     return render_template('register_brand.html')
+@app.route('/home')
+def home():
+    if 'user_id' not in session:
+        return redirect('/login')
+
+    user_type = session['user_type']
+
+    if user_type == 'brand':
+        return render_template('home_brand.html')  # Create this file for Brand homepage
+
+    elif user_type == 'influencer':
+        return render_template('home_influencer.html')  # Create this file for Influencer homepage
+
+    return redirect('/')
 
 @app.route('/register-influencer', methods=['GET', 'POST'])
 def register_influencer():
