@@ -138,6 +138,62 @@ def find_influencer_matches(company_id):
     return matches
 
 # Flask routes
+@app.route('/register-brand', methods=['GET', 'POST'])
+def register_brand():
+    if request.method == 'POST':
+        name = request.form['name']
+        niche = request.form['niche']
+        budget = request.form['budget']
+        email = request.form['email']
+        password = request.form['password']
+
+        hashed_password = generate_password_hash(password)
+
+        conn = sqlite3.connect('database.db')
+        c = conn.cursor()
+        c.execute('INSERT INTO users (email, password, user_type) VALUES (?, ?, ?)', 
+                  (email, hashed_password, 'brand'))
+        conn.commit()
+
+        # Store brand data in the 'companies' table
+        c.execute('INSERT INTO companies (name, niche, budget) VALUES (?, ?, ?)', 
+                  (name, niche, budget))
+        conn.commit()
+        conn.close()
+
+        return redirect('/login')
+
+    return render_template('register_brand.html')
+
+@app.route('/register-influencer', methods=['GET', 'POST'])
+def register_influencer():
+    if request.method == 'POST':
+        name = request.form['name']
+        niche = request.form['niche']
+        followers = request.form['followers']
+        platform = request.form['platform']
+        email = request.form['email']
+        password = request.form['password']
+
+        hashed_password = generate_password_hash(password)
+
+        conn = sqlite3.connect('database.db')
+        c = conn.cursor()
+        c.execute('INSERT INTO users (email, password, user_type) VALUES (?, ?, ?)', 
+                  (email, hashed_password, 'influencer'))
+        conn.commit()
+
+        # Store influencer data in the 'influencers' table
+        c.execute('INSERT INTO influencers (name, niche, followers, platform) VALUES (?, ?, ?, ?)', 
+                  (name, niche, followers, platform))
+        conn.commit()
+        conn.close()
+
+        return redirect('/login')
+
+    return render_template('register_influencer.html')
+
+
 @app.route('/')
 def home():
     return render_template('home.html')   # This will show your new home.html
