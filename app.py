@@ -2,6 +2,8 @@ import re
 import sqlite3
 from flask import Flask, request, render_template, jsonify, redirect
 import json
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask import session
 
 app = Flask(__name__)
 
@@ -281,6 +283,32 @@ def chat():
     session_state.clear()
     return jsonify({'response': response})
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+
+        conn = sqlite3.connect('database.db')
+        c = conn.cursor()
+        c.execute('SELECT id, password, user_type FROM users WHERE email = ?', (email,))
+        user = c.fetchone()
+        conn.close()
+
+        if user and check_password_hash(user[1], password):
+            session['user_id'] = user[0]
+            session['user_type'] = user[2]
+            return redirect('/dashboard')  # Create this later
+        else:
+            return "Invalid credentials. Try again."
+
+    return render_template('login.html')
+
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect('/')
 
 # Success Page
 @app.route('/success')
