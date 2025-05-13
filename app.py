@@ -9,11 +9,12 @@ app = Flask(__name__)
 
 session_state = {}  # <<< ✅ ADD IT RIGHT HERE!
 
-
 # Database setup
 def init_db():
     conn = sqlite3.connect('database.db')
     c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS users 
+                 (id INTEGER PRIMARY KEY, email TEXT, password TEXT, user_type TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS influencers 
                  (id INTEGER PRIMARY KEY, name TEXT, niche TEXT, followers INTEGER, platform TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS companies 
@@ -79,10 +80,8 @@ Be friendly, short, and professional."""
 
         response = openai.ChatCompletion.create(
             model="mistralai/Mixtral-8x7B-Instruct-v0.1",
-            messages=[
-                {"role": "system", "content": prompt},
-                {"role": "user", "content": message}
-            ]
+            messages=[{"role": "system", "content": prompt},
+                      {"role": "user", "content": message}]
         )
         reply = response['choices'][0]['message']['content']
         return reply
@@ -90,7 +89,6 @@ Be friendly, short, and professional."""
     except Exception as e:
         print(e)
         return f"Error: {e}"
-
 
 # Database functions
 def save_influencer(name, niche, followers, platform):
@@ -150,9 +148,7 @@ def chatbot():
 
 # Add this at the top of your app.py
 
-
 # At top of app.py
-
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -225,7 +221,7 @@ def chat():
         expected_followers_low = budget * 8
         expected_followers_high = budget * 12
 
-        c.execute("""
+        c.execute(""" 
             SELECT name, followers, platform 
             FROM influencers 
             WHERE LOWER(niche) = LOWER(?) 
@@ -283,6 +279,7 @@ def chat():
     session_state.clear()
     return jsonify({'response': response})
 
+# User Login Route
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -304,73 +301,42 @@ def login():
 
     return render_template('login.html')
 
+# Dashboard Route
+@app.route('/dashboard')
+def dashboard():
+    if 'user_id' not in session:
+        return redirect('/login')
+
+    user_id = session['user_id']
+    user_type = session['user_type']
+
+    if user_type == 'brand':
+        # Show the brand's dashboard (e.g., campaigns, matches with influencers)
+        conn = sqlite3.connect('database.db')
+        c = conn.cursor()
+        c.execute("SELECT title, budget, status FROM campaigns WHERE company_id = ?", (user_id,))
+        campaigns = c.fetchall()
+        conn.close()
+        return render_template('brand_dashboard.html', campaigns=campaigns)
+
+    elif user_type == 'influencer':
+        # Show the influencer's dashboard (e.g., their profile, matches with brands)
+        conn = sqlite3.connect('database.db')
+        c = conn.cursor()
+        c.execute("SELECT name, niche, followers, platform FROM influencers WHERE id = ?", (user_id,))
+        influencer = c.fetchone()
+        conn.close()
+        return render_template('influencer_dashboard.html', influencer=influencer)
+
+    return redirect('/')
 
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect('/')
 
-# Success Page
-@app.route('/success')
-def success():
-    return render_template('success.html')
-
-# Campaigns Page
-@app.route('/campaigns')
-def campaigns():
-    conn = sqlite3.connect('database.db')
-    c = conn.cursor()
-    c.execute("SELECT title, budget, status FROM campaigns")
-    campaigns = c.fetchall()
-    conn.close()
-    return render_template('campaigns.html', campaigns=campaigns)
-
-# Browse Influencers Page
-@app.route('/influencers')
-def browse_influencers():
-    conn = sqlite3.connect('database.db')
-    c = conn.cursor()
-    c.execute("SELECT name, niche, followers, platform FROM influencers")
-    influencers = c.fetchall()
-    conn.close()
-    return render_template('browse_influencers.html', influencers=influencers)
-
-@app.route('/register-brand', methods=['GET', 'POST'])
-def register_brand():
-    if request.method == 'POST':
-        name = request.form['name']
-        niche = request.form['niche']
-        budget = int(request.form['budget'])
-
-        conn = sqlite3.connect('database.db')
-        c = conn.cursor()
-        c.execute('INSERT INTO companies (name, niche, budget) VALUES (?, ?, ?)', (name, niche, budget))
-        conn.commit()
-        conn.close()
-
-        return redirect('/success')
-    return render_template('register_brand.html')
-
-
-
-@app.route('/register-influencer', methods=['GET', 'POST'])
-def register_influencer():
-    if request.method == 'POST':
-        name = request.form['name']
-        niche = request.form['niche']
-        platform = request.form['platform']
-        followers = request.form['followers']
-
-        conn = sqlite3.connect('database.db')
-        c = conn.cursor()
-        c.execute('INSERT INTO influencers (name, niche, followers, platform) VALUES (?, ?, ?, ?)', 
-                  (name, niche, followers, platform))
-        conn.commit()
-        conn.close()
-
-        return redirect('/success')
-    return render_template('register_influencer.html')
-
+# Success Function
 if __name__ == '__main__':
     init_db()
+    app.secret_key = os.urandom(24)
     app.run(debug=True)
