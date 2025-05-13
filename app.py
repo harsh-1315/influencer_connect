@@ -133,20 +133,23 @@ def register_brand():
         return redirect('/login')
 
     return render_template('register_brand.html')
+
+
 @app.route('/home')
 def home():
     if 'user_id' not in session:
-        return redirect('/login')
+        return redirect('/login')  # Make sure the session is active
 
     user_type = session['user_type']
 
     if user_type == 'brand':
-        return render_template('home_brand.html')  # Create this file for Brand homepage
+        return render_template('home_brand.html')  # Make sure this file exists in templates
 
     elif user_type == 'influencer':
-        return render_template('home_influencer.html')  # Create this file for Influencer homepage
+        return render_template('home_influencer.html')  # Make sure this file exists in templates
 
-    return redirect('/')
+    return redirect('/')  # Fallback to home if no user_type is found
+
 
 @app.route('/register-influencer', methods=['GET', 'POST'])
 def register_influencer():
@@ -192,12 +195,13 @@ def login():
             session['user_id'] = user[0]
             session['user_type'] = user[2]
             session['user_name'] = user[3]  # Store user's name in session
-            return redirect('/dashboard')
+            return redirect('/home')  # Ensure this redirects to the /home route
 
         else:
             return "Invalid credentials. Try again."
 
     return render_template('login.html')
+
 
 @app.route('/dashboard')
 def dashboard():
