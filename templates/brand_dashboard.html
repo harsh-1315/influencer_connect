@@ -1,0 +1,11 @@
+<!-- templates/brand_dashboard.html -->
+<h1>Welcome, Brand!</h1>
+<h2>Your Campaigns</h2>
+<ul>
+    {% for campaign in campaigns %}
+        <li>{{ campaign[0] }} (Budget: ${{ campaign[1] }}, Status: {{ campaign[2] }})</li>
+    {% else %}
+        <p>No campaigns found.</p>
+    {% endfor %}
+</ul>
+<a href="/logout">Logout</a>
