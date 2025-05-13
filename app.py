@@ -138,7 +138,7 @@ def register_brand():
 @app.route('/home')
 def home():
     if 'user_id' not in session:
-        return redirect('/login')  # Make sure the session is active
+        return redirect('/login')  # Ensure the session is active
 
     user_type = session['user_type']
 
