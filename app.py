@@ -205,6 +205,15 @@ def login():
 
     return render_template('login.html')
 
+@app.route('/chatbot', methods=['POST'])
+def chatbot():
+    data = request.json
+    if not data or 'message' not in data:
+        return jsonify({'error': 'No message provided'}), 400
+
+    message = data['message']
+    reply = chatbot_response(message)
+    return jsonify({'reply': reply})
 
 @app.route('/dashboard')
 def dashboard():
