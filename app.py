@@ -134,6 +134,9 @@ def register_brand():
 
     return render_template('register_brand.html')
 
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/home')
 def home():
