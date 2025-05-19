@@ -261,18 +261,8 @@ def create_campaign():
 
         conn = sqlite3.connect('database.db')
         c = conn.cursor()
-       # Fetch company ID based on the user's name (which we stored during login)
-c.execute("SELECT id FROM companies WHERE name = ?", (session['user_name'],))
-company = c.fetchone()
-
-if company:
-    company_id = company[0]
-    c.execute("INSERT INTO campaigns (company_id, title, budget, status) VALUES (?, ?, ?, ?)",
-              (company_id, title, budget, status))
-    conn.commit()
-else:
-    print("Error: Company not found for user.")
-
+        c.execute("INSERT INTO campaigns (company_id, title, budget, status) VALUES (?, ?, ?, ?)",
+                  (session['user_id'], title, budget, status))
         conn.commit()
         conn.close()
         
